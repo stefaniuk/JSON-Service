@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.stefaniuk.json.service</groupId>
         <artifactId>json-service-parent</artifactId>
-        <version>1.2.5-SNAPSHOT</version>
+        <version>1.2.5-lengo</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -36,6 +36,11 @@
             <artifactId>test-jetty-servlet</artifactId>
             <version>${jetty.servlet.tester.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+	        <groupId>commons-codec</groupId>
+	        <artifactId>commons-codec</artifactId>
+	        <version>1.10</version>
         </dependency>
     </dependencies>
 
