@@ -1,12 +1,15 @@
 package org.stefaniuk.json.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -17,14 +20,24 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.BeanProperty;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.SerializerFactory;
+import org.codehaus.jackson.map.TypeSerializer;
+import org.codehaus.jackson.map.module.SimpleModule;
+import org.codehaus.jackson.map.ser.CustomSerializerFactory;
 import org.codehaus.jackson.map.type.TypeFactory;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.POJONode;
+import org.codehaus.jackson.type.JavaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stefaniuk.json.mappers.DataUriMapper;
+import org.stefaniuk.json.mappers.types.DataURI;
 
 /**
  * <p>
@@ -50,8 +63,16 @@ public class JsonServiceInvoker {
      * This object provides functionality for conversion between Java objects
      * and JSON.
      */
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static ObjectMapper mapper = null;
 
+    static{
+    	mapper = new ObjectMapper();
+        SimpleModule sm=new SimpleModule("DataUriSerializer", new org.codehaus.jackson.Version(1, 0, 0, null) );
+        sm.addSerializer(DataURI.class, new DataUriMapper.DataURISerializer());
+        sm.addDeserializer(DataURI.class, new DataUriMapper.DataURIDeserializer());
+        mapper.registerModule(sm);
+    }
+    
     /** Indicates if object has been initialised. */
     private boolean isInitialised = false;
 
@@ -423,7 +444,7 @@ public class JsonServiceInvoker {
 
         }
         catch(Exception e) {
-            e.printStackTrace(System.err);
+            logger.error(e.getMessage(),e);
         }
     }
 
@@ -527,7 +548,7 @@ public class JsonServiceInvoker {
                                 list.set(j, pojo);
                             }
                             catch(ClassNotFoundException e) {
-                                e.printStackTrace();
+                                logger.error(e.getMessage(),e);
                             }
                         }
                     }
@@ -553,9 +574,19 @@ public class JsonServiceInvoker {
             if(t instanceof JsonServiceException) {
                 JsonServiceException jse = (JsonServiceException) t;
                 response = getJsonRpcErrorResponse(requestNode.get("id").getIntValue(), jse.getError());
-            }
-            else {
-                throw e;
+            }else {
+            	Throwable original=getOriginalException(t);
+            	ByteArrayOutputStream str=new ByteArrayOutputStream();
+            	PrintWriter pw=new PrintWriter(str,true);
+	            try {
+	            	original.printStackTrace(pw);
+	            	response = getJsonRpcErrorResponse(requestNode.get("id").getIntValue(), original,URLEncoder.encode(str.toString(),"UTF-8"));
+				} catch (IOException e1) {
+				}finally{
+					if(pw!=null){try{pw.close();}catch(Exception e2){}}
+					if(str!=null){try{str.close();}catch(Exception e2){}}
+				}
+            	
             }
         }
         catch(JsonServiceException e) {
@@ -567,7 +598,17 @@ public class JsonServiceInvoker {
         return response;
     }
 
-    /**
+
+
+	private Throwable getOriginalException(Throwable t) {
+		if(t.getCause()!=null && !t.equals(t.getCause())){
+			return getOriginalException(t.getCause());
+		}else{
+			return t;
+		}
+	}
+
+	/**
      * Processes request.
      * 
      * @param request HTTP request
@@ -748,5 +789,23 @@ public class JsonServiceInvoker {
 
         return responseNode;
     }
+    private JsonNode getJsonRpcErrorResponse(Integer id, Throwable cause, String stackUrlEncoded) {
+    	ObjectNode errorNode = mapper.createObjectNode();
+        errorNode.put("code", cause.hashCode());
+        errorNode.put("message", cause.getMessage());
+        errorNode.put("data", stackUrlEncoded);
+        
+        ObjectNode responseNode = mapper.createObjectNode();
+        if(id != null) {
+            responseNode.put("id", id);
+        }
+        else {
+            responseNode.putNull("id");
+        }
+        responseNode.putNull("result");
+        responseNode.put("error", errorNode);
+        responseNode.put("jsonrpc", envelope.toString());
 
+        return responseNode;
+	}
 }
