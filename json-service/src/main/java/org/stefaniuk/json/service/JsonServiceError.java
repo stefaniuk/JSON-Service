@@ -28,6 +28,8 @@ public enum JsonServiceError {
     /** Error message. */
     private String message;
 
+    /** Error data **/
+    private String data;
     /**
      * Constructor
      * 
@@ -68,4 +70,13 @@ public enum JsonServiceError {
         this.message = message;
     }
 
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+    
 }

@@ -576,16 +576,7 @@ public class JsonServiceInvoker {
                 response = getJsonRpcErrorResponse(requestNode.get("id").getIntValue(), jse.getError());
             }else {
             	Throwable original=getOriginalException(t);
-            	ByteArrayOutputStream str=new ByteArrayOutputStream();
-            	PrintWriter pw=new PrintWriter(str,true);
-	            try {
-	            	original.printStackTrace(pw);
-	            	response = getJsonRpcErrorResponse(requestNode.get("id").getIntValue(), original,URLEncoder.encode(str.toString(),"UTF-8"));
-				} catch (IOException e1) {
-				}finally{
-					if(pw!=null){try{pw.close();}catch(Exception e2){}}
-					if(str!=null){try{str.close();}catch(Exception e2){}}
-				}
+            	response = getJsonRpcErrorResponse(requestNode.get("id").getIntValue(), original);
             	
             }
         }
@@ -789,12 +780,20 @@ public class JsonServiceInvoker {
 
         return responseNode;
     }
-    private JsonNode getJsonRpcErrorResponse(Integer id, Throwable cause, String stackUrlEncoded) {
+    private JsonNode getJsonRpcErrorResponse(Integer id, Throwable cause) {
     	ObjectNode errorNode = mapper.createObjectNode();
         errorNode.put("code", cause.hashCode());
         errorNode.put("message", cause.getMessage());
-        errorNode.put("data", stackUrlEncoded);
-        
+        ByteArrayOutputStream str=new ByteArrayOutputStream();
+    	PrintWriter pw=new PrintWriter(str,true);
+        try {
+        	cause.printStackTrace(pw);
+        	errorNode.put("data", URLEncoder.encode(str.toString(),"UTF-8"));
+        } catch (IOException e1) {
+		}finally{
+			if(pw!=null){try{pw.close();}catch(Exception e2){}}
+			if(str!=null){try{str.close();}catch(Exception e2){}}
+		}
         ObjectNode responseNode = mapper.createObjectNode();
         if(id != null) {
             responseNode.put("id", id);

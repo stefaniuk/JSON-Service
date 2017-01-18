@@ -1,10 +1,13 @@
 package org.stefaniuk.json.service;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -483,11 +486,25 @@ public class JsonServiceRegistry {
             // send "Invalid Request" response object
             try {
             	JsonServiceError error = JsonServiceError.INVALID_REQUEST;
-            	if(e instanceof InvocationTargetException)
-            		error.setMessage(((InvocationTargetException)e).getTargetException().getMessage());
-            	else
-                	error.setMessage(e.getMessage());
-            		
+            	Throwable t=null;
+            	if(e instanceof InvocationTargetException){
+            		t=((InvocationTargetException)e).getTargetException();
+            	}else{
+                	t=e;
+            	}
+            	error.setMessage(t.getMessage());
+            	if(error.getData()==null){
+	            	ByteArrayOutputStream str=new ByteArrayOutputStream();
+	            	PrintWriter pw=new PrintWriter(str,true);
+	                try {
+	                	t.printStackTrace(pw);
+	                	error.setData(URLEncoder.encode(str.toString(),"UTF-8"));
+	                } catch (IOException e1) {
+	        		}finally{
+	        			if(pw!=null){try{pw.close();}catch(Exception e2){}}
+	        			if(str!=null){try{str.close();}catch(Exception e2){}}
+	        		}
+            	}	
                 ObjectNode response = JsonServiceUtil.getJsonServiceErrorNode(error);
                 logger.debug("JSON-RPC response: " + response.toString());
                 mapper.createObjectNode();
