@@ -8,7 +8,7 @@ import org.apache.commons.codec.binary.Base64;
 /**
  * As defined in http://tools.ietf.org/html/rfc2397
  *
- * @author Pere Joseph Rodríguez
+ * @author Pere Joseph Rodriguez
  *
  */
 public class DataURI  implements Serializable{

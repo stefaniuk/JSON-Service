@@ -19,6 +19,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.PropertyNamingStrategy;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
@@ -90,7 +91,6 @@ public class JsonServiceRegistry {
      * Constructor
      */
     public JsonServiceRegistry() {
-
     }
 
     /**
@@ -667,6 +667,7 @@ public class JsonServiceRegistry {
 
         JsonNode responseNode = invoker.process(request, method, args);
 
+        mapper.setPropertyNamingStrategy(new UnmodifiedPropertyNamingStrategy());
         mapper.writeValue(os, responseNode);
     }
 
@@ -688,7 +689,8 @@ public class JsonServiceRegistry {
             JsonGenerationException, JsonMappingException, IOException {
 
         JsonNode responseNode = invoker.process(request, requestNode);
-
+        
+        mapper.setPropertyNamingStrategy(new UnmodifiedPropertyNamingStrategy());
         mapper.writeValue(os, responseNode);
     }
 
