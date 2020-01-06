@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.stefaniuk.json.service</groupId>
+        <groupId>com.samsarasoftware.json.service</groupId>
         <artifactId>json-service-parent</artifactId>
-        <version>1.2.5-lengo</version>
+        <version>1.2.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -16,13 +16,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- JSON Service -->
-        <json.service.version>1.2.5-lengo</json.service.version>
+        <json.service.version>1.2.7-SNAPSHOT</json.service.version>
     </properties>
 
     <dependencies>
         <!-- JSON Service -->
         <dependency>
-            <groupId>org.stefaniuk.json.service</groupId>
+            <groupId>com.samsarasoftware.json.service</groupId>
             <artifactId>json-service</artifactId>
             <version>${json.service.version}</version>
         </dependency>

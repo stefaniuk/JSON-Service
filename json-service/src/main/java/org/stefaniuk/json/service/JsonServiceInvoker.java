@@ -70,6 +70,7 @@ public class JsonServiceInvoker {
         SimpleModule sm=new SimpleModule("DataUriSerializer", new org.codehaus.jackson.Version(1, 0, 0, null) );
         sm.addSerializer(DataURI.class, new DataUriMapper.DataURISerializer());
         sm.addDeserializer(DataURI.class, new DataUriMapper.DataURIDeserializer());
+        mapper.setPropertyNamingStrategy(new EqualPropertyNameStrategy());
         mapper.registerModule(sm);
     }
     
