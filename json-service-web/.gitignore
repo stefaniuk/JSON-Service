@@ -1,3 +1,6 @@
 /target/
 /.flattened-pom.xml
 /pom.xml.releaseBackup
+/.settings/
+/.classpath
+/.project
