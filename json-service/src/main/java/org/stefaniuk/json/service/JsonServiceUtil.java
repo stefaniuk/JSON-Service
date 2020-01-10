@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -428,6 +429,9 @@ public class JsonServiceUtil {
 
         node.put("jsonrpc", "2.0");
         node.put("error", code);
+        if(jse.getData()!=null){
+        	code.put("data", jse.getData());
+        }
         node.putNull("id");
 
         return node;
@@ -443,6 +447,9 @@ public class JsonServiceUtil {
 
         node.put("jsonrpc", "2.0");
         node.put("error", code);
+        if(jse.getData()!=null){
+        	code.put("data", jse.getData());
+        }
         node.put("id", id);
 
         return node;
